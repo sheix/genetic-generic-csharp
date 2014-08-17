@@ -3,6 +3,10 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine", "Engine.csproj", "{9A56F456-97D8-4CA3-908F-B3BAB9E0FA67}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DSP", "..\DSP\DSP.csproj", "{EFEE68E3-427B-43EA-A94B-C1E1E113E597}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DSPTest", "DSPTest\DSPTest.csproj", "{D3778BFD-3794-47DC-9888-A9979B095142}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +17,14 @@ Global
 		{9A56F456-97D8-4CA3-908F-B3BAB9E0FA67}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A56F456-97D8-4CA3-908F-B3BAB9E0FA67}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9A56F456-97D8-4CA3-908F-B3BAB9E0FA67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFEE68E3-427B-43EA-A94B-C1E1E113E597}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFEE68E3-427B-43EA-A94B-C1E1E113E597}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFEE68E3-427B-43EA-A94B-C1E1E113E597}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFEE68E3-427B-43EA-A94B-C1E1E113E597}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3778BFD-3794-47DC-9888-A9979B095142}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3778BFD-3794-47DC-9888-A9979B095142}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3778BFD-3794-47DC-9888-A9979B095142}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3778BFD-3794-47DC-9888-A9979B095142}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
