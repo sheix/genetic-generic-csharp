@@ -8,15 +8,22 @@ namespace Engine
     {
         private readonly IRandomSolutionFactory<T> _factory;
         private List<T> _population;
-        protected int SurvivorsPercent;
+        public int SurvivorsPercent;
         private readonly Random _random;
         private List<Func<T,T,T>> Crossovers { get; set; }
         protected List<Action<T>> Mutations { get; set; }
 
         public Engine(IRandomSolutionFactory<T> factory)
         {
-            _random = new Random((int)(DateTime.Now.ToBinary() % int.MaxValue));
+            _random = new Random();
             _factory = factory;
+            Crossovers = new List<Func<T, T, T>>();
+            Mutations = new List<Action<T>>();
+        }
+
+        public void AddCrossover(Func<T,T,T> func)
+        {
+            Crossovers.Add(func);
         }
 
         public void Populate()
@@ -47,7 +54,7 @@ namespace Engine
             for (int i = 0; i < newbornCount; i++)
             {
                 var crossover = SelectCrossover();
-                newPopulation.Add(crossover(_population[_random.Next(PopulationSize)],_population[_random.Next(PopulationSize)]));
+                newPopulation.Add(crossover(_population[_random.Next(_population.Count)], _population[_random.Next(_population.Count)]));
             }
             _population.AddRange(newPopulation);
         }
@@ -77,7 +84,7 @@ namespace Engine
         private void SelectBestMembers()
         {
             _population.Sort((a,b) => FitnessFunction(a) - FitnessFunction(b));
-            var newPopulation = _population.Take(PopulationSize*100/SurvivorsPercent);
+            var newPopulation = _population.Take(PopulationSize*SurvivorsPercent/100);
             _population = newPopulation.ToList();
         }
 

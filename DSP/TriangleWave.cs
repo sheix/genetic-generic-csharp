@@ -42,9 +42,11 @@
                 switch (selector)
                 {
                     case 0:
+                        if (AttackEdge!=0)
                         result[i] += attack[AttackEdge - count];
                         break;
                     case 1:
+                        if (BackEdge !=0)
                         result[i] += back[BackEdge - count];
                         break;
                     case 2:

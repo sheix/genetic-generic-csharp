@@ -16,6 +16,7 @@ namespace DSP
 
         public static void Main()
         {
+            var random = new Random();
             var engine = new Engine<Wave>(new RandomWaveFactory());
             var MyWave = new ResultWave();
             MyWave.AddWave(new SquareWave(127, 10, 10, 0));
@@ -23,7 +24,25 @@ namespace DSP
             engine.SetFitnessFunction((a) => a.Generate(1024).AbsoluteDifference(MyWave.Generate(1024)));
             engine.PopulationSize = 400;
             engine.Populate();
+            engine.SurvivorsPercent = 10;
+            engine.AddCrossover((w1, w2) =>
+                                    {
+                                        var result = new ResultWave();
+                                        foreach (var wave in w1.Waves())
+                                        {
+                                            if (random.Next(2)==0)
+                                                result.AddWave(wave);
+                                        }
+                                        foreach (var wave in w2.Waves())
+                                        {
+                                            if (random.Next(2) == 0)
+                                                result.AddWave(wave);
+                                        }
+                                        return result;
+                                    }
+                );
 
+            //engine.SetTerminator();
             engine.RunIteration();
         }
     }
