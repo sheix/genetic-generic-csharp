@@ -4,17 +4,19 @@ using System.Linq;
 
 namespace Engine
 {
-    public class Engine<T> where T : new()
+    public class Engine<T>
     {
+        private readonly IRandomSolutionFactory<T> _factory;
         private List<T> _population;
         protected int SurvivorsPercent;
         private readonly Random _random;
         private List<Func<T,T,T>> Crossovers { get; set; }
         protected List<Action<T>> Mutations { get; set; }
 
-        public Engine()
+        public Engine(IRandomSolutionFactory<T> factory)
         {
             _random = new Random((int)(DateTime.Now.ToBinary() % int.MaxValue));
+            _factory = factory;
         }
 
         public void Populate()
@@ -22,12 +24,12 @@ namespace Engine
             _population = new List<T>();
             for (int i = 0; i < PopulationSize; i++)
             {
-                var t = new T();
+                var t = _factory.GetPossibleSolution();
                 _population.Add(t);
             }
         }
 
-        protected int PopulationSize { get; set; }
+        public int PopulationSize { get; set; }
         protected Func<T, int> FitnessFunction { get; set; }
 
         public void RunIteration()
@@ -78,5 +80,15 @@ namespace Engine
             var newPopulation = _population.Take(PopulationSize*100/SurvivorsPercent);
             _population = newPopulation.ToList();
         }
+
+        public void SetFitnessFunction(Func<T, int> func)
+        {
+            FitnessFunction = func;
+        }
+    }
+
+    public interface IRandomSolutionFactory<out T>
+    {
+        T GetPossibleSolution();
     }
 }

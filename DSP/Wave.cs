@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace DSP
@@ -15,30 +16,29 @@ namespace DSP
         public ResultWave()
         {
             Offset = 0;
-        }
-        public byte[] ByteArray;
-
-        private int _length;
-
-        public void SetLength(int length)
-        {
-            _length = length;
+            _waves = new List<Wave>();
         }
 
-        public void SetWaves(List<Wave> waves)
-        {
-            ByteArray = new Byte[_length];
-            foreach (var wave in waves)
-            {
-                byte[] bytewave = wave.Generate(_length);
-                for (int i = 0; i < _length; i++)
-                    ByteArray[i] = Math.Max(bytewave[i], ByteArray[i]);
-            }
-        }
+       
+        private readonly List<Wave> _waves;
+
+
 
         public override byte[] Generate(int length)
         {
-            return ByteArray;
+            var byteArray = new Byte[length];
+            foreach (var wave in _waves)
+            {
+                byte[] bytewave = wave.Generate(length);
+                for (int i = 0; i < length; i++)
+                    byteArray[i] = Math.Max(bytewave[i], byteArray[i]);
+            }
+            return byteArray;
+        }
+
+        public void AddWave(Wave newWave)
+        {
+            _waves.Add(newWave);
         }
     }
 }

@@ -33,9 +33,8 @@ namespace DSPTest
         public void ProduceZeroResultWhenNoWaves()
         {
             var result = new ResultWave();
-            result.SetLength(100);
-            result.SetWaves(new List<Wave>());
-            int sum = result.ByteArray.Aggregate(0, (current, b) => current + b);
+            result.Generate(100);
+            int sum = result.Generate(100).Aggregate(0, (current, b) => current + b);
 
             Assert.AreEqual(0,sum);
         }
@@ -44,9 +43,9 @@ namespace DSPTest
         public void ProduceNonZeroImpactWithSquareWave()
         {
             var result = new ResultWave();
-            result.SetLength(100);
-            result.SetWaves(new List<Wave> {new SquareWave(10,10,10,0)});
-            int sum = result.ByteArray.Aggregate(0, (current, b) => current + b);
+            result.AddWave(new SquareWave(10,10,10,0));
+            
+            int sum = result.Generate(100).Aggregate(0, (current, b) => current + b);
             Assert.IsTrue(sum>0);
         }
 
