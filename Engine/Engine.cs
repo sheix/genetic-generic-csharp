@@ -21,6 +21,11 @@ namespace Engine
             Mutations = new List<Action<T>>();
         }
 
+        public IEnumerable<T> GetBest(int N)
+        {
+            return _population.Take(N);
+        }
+
         public void AddCrossover(Func<T,T,T> func)
         {
             Crossovers.Add(func);
