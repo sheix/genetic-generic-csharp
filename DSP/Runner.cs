@@ -25,7 +25,7 @@ namespace DSP
             _myWave = new ResultWave();
             _myWave.AddWave(new SquareWave(127, 10, 10, 0));
             _myWave.AddWave(new TriangleWave(63, 25, 0, 0, 0));
-            _engine.SetFitnessFunction(a => a.Generate(1024).AbsoluteDifference(_myWave.Generate(1024)));
+            _engine.SetFitnessFunction(AbsoluteDifference);
             _engine.PopulationSize = 400;
             _engine.Populate();
             _engine.SurvivorsPercent = 10;
@@ -66,6 +66,11 @@ namespace DSP
             
         }
 
+        private static int AbsoluteDifference(Wave a)
+        {
+            return a.Generate(1024).AbsoluteDifference(_myWave.Generate(1024));
+        }
+
         private static void RenderWaves(RenderWindow window)
         {
             var bestWaves = _engine.GetBest(5);
@@ -83,7 +88,15 @@ namespace DSP
         {
             int x = 0;
             Vertex oldVertex = new Vertex(new Vector2f(x,i*256));
-            
+            Drawable text = new Text
+                                {
+                                    DisplayedString = AbsoluteDifference(bestWave).ToString(),
+                                    CharacterSize = 10,
+                                    Position = new Vector2f(100, i * 256),
+                                    Font = new Font("c:\\windows\\fonts\\arial.ttf") 
+                                };
+            window.Draw(text);
+
             foreach (var pitch in bestWave.Generate(1024))
             {
                 
