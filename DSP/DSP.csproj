@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RandomWaveFactory.cs" />
     <Compile Include="ResultWave.cs" />
     <Compile Include="Runner.cs" />
     <Compile Include="SquareWave.cs" />

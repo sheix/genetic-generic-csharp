@@ -31,6 +31,11 @@ namespace Engine
             Crossovers.Add(func);
         }
 
+        public void AddMutation(Action<T> func)
+        {
+            Mutations.Add(func);
+        }
+
         public void Populate()
         {
             _population = new List<T>();

@@ -45,6 +45,18 @@ namespace DSP
                                         return result;
                                     }
                 );
+            _engine.AddMutation(m => {if (m is ResultWave)
+            m.Waves().RemoveAt(random.Next(m.Waves().Count));
+            });
+            _engine.AddMutation(m=> {if (m is ResultWave) 
+            m.Waves().Add(RandomWaveFactory.GetNewSquareWave());});
+
+            _engine.AddMutation(m =>
+            {
+                if (m is ResultWave)
+                    m.Waves().Add(RandomWaveFactory.GetNewTriangleWave());
+            });
+                
 
             //engine.SetTerminator();
             var window = new RenderWindow(VideoMode.DesktopMode, "Test");
@@ -58,7 +70,7 @@ namespace DSP
                 window.Clear();
 
                 RenderWaves(window);
-
+                
                 window.Display();
             }
 
@@ -87,12 +99,12 @@ namespace DSP
         private static void DrawWave(RenderWindow window, Wave bestWave, int i = 5)
         {
             int x = 0;
-            Vertex oldVertex = new Vertex(new Vector2f(x,i*256));
+            Vertex oldVertex = new Vertex(new Vector2f(x,i*128));
             Drawable text = new Text
                                 {
                                     DisplayedString = AbsoluteDifference(bestWave).ToString(),
                                     CharacterSize = 10,
-                                    Position = new Vector2f(100, i * 256),
+                                    Position = new Vector2f(100, i * 128),
                                     Font = new Font("c:\\windows\\fonts\\arial.ttf") 
                                 };
             window.Draw(text);
@@ -101,7 +113,7 @@ namespace DSP
             {
                 
                 var line = new Vertex[2];
-                var newVertex = new Vertex(new Vector2f(x, i*256 + pitch));
+                var newVertex = new Vertex(new Vector2f(x, i*128 + pitch/2));
                 line[0] = oldVertex;
                 line[1] = newVertex;
                 x++;
@@ -128,52 +140,4 @@ namespace DSP
                 _engine.RunIteration();
         }
     }
-
-    internal class RandomWaveFactory : IRandomSolutionFactory<Wave>
-    {
-        private int maxWaves = 10;
-        private Random _random;
-
-        public RandomWaveFactory()
-        {
-            _random = new Random();
-        }
-        public Wave GetPossibleSolution()
-        {
-            int waveCount = _random.Next(maxWaves) + 1;
-            var wave = new ResultWave();
-            for (int i = 0; i < waveCount; i++)
-            {
-                Wave newWave = null;
-                const int maxHeight = 255;
-                const int maxPause = 255;
-                const int maxOffset = 255;
-                const int maxWidth = 255;
-                const int maxAttackEdge = 255;
-                const int maxBackEdge = 255;
-                switch (_random.Next(2))
-                {
-                    case 0:
-                        newWave = new SquareWave(
-                            (byte)_random.Next(maxHeight),
-                            (byte)_random.Next(maxWidth),
-                            (byte)_random.Next(maxPause),
-                            (byte)_random.Next(maxOffset));
-                        break;
-                    case 1:
-
-                        newWave = new TriangleWave(
-                            (byte)_random.Next(maxHeight),
-                            (byte)_random.Next(maxAttackEdge),
-                            (byte)_random.Next(maxBackEdge),
-                            (byte)_random.Next(maxPause),
-                            (byte)_random.Next(maxOffset));
-                        break;
-                }
-                wave.AddWave(newWave);
-            }
-            return wave;
-        }
-    }
-
 }
