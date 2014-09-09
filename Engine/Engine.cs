@@ -19,6 +19,7 @@ namespace Engine
             _factory = factory;
             Crossovers = new List<Func<T, T, T>>();
             Mutations = new List<Action<T>>();
+            Iteration = 1;
         }
 
         public IEnumerable<T> GetBest(int N)
@@ -54,8 +55,11 @@ namespace Engine
             SelectBestMembers();
             Mutate();
             CrossOver();
+            Iteration++;
             //Terminate();
         }
+
+        public int Iteration { get; private set; }
 
         private void CrossOver()
         {

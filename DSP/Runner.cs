@@ -70,7 +70,7 @@ namespace DSP
                 window.Clear();
 
                 RenderWaves(window);
-                
+                RenderGeneration(window);    
                 window.Display();
             }
 
@@ -78,9 +78,21 @@ namespace DSP
             
         }
 
+        private static void RenderGeneration(RenderWindow window)
+        {
+            Drawable text = new Text
+            {
+                DisplayedString = _engine.Iteration.ToString(),
+                CharacterSize = 10,
+                Position = new Vector2f(1010, 10),
+                Font = new Font("c:\\windows\\fonts\\arial.ttf")
+            };
+            window.Draw(text);
+        }
+
         private static int AbsoluteDifference(Wave a)
         {
-            return a.Generate(1024).AbsoluteDifference(_myWave.Generate(1024));
+            return a.Generate(256).AbsoluteDifference(_myWave.Generate(256));
         }
 
         private static void RenderWaves(RenderWindow window)
@@ -109,7 +121,7 @@ namespace DSP
                                 };
             window.Draw(text);
 
-            foreach (var pitch in bestWave.Generate(1024))
+            foreach (var pitch in bestWave.Generate(256))
             {
                 
                 var line = new Vertex[2];
