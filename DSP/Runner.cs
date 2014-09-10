@@ -23,12 +23,14 @@ namespace DSP
             var random = new Random();
             _engine = new Engine<Wave>(new RandomWaveFactory());
             _myWave = new ResultWave();
-            _myWave.AddWave(new SquareWave(127, 10, 10, 0));
-            _myWave.AddWave(new TriangleWave(63, 25, 0, 0, 0));
+            //_myWave.AddWave(new SquareWave(127, 10, 10, 0));
+            _myWave.AddWave(new TriangleWave(63, 25, 25, 0, 0));
+
+
             _engine.SetFitnessFunction(AbsoluteDifference);
             _engine.PopulationSize = 400;
             _engine.Populate();
-            _engine.SurvivorsPercent = 10;
+            _engine.SurvivorsPercent = 50;
             _engine.AddCrossover((w1, w2) =>
                                     {
                                         var result = new ResultWave();
@@ -50,18 +52,19 @@ namespace DSP
             });
             _engine.AddMutation(m=> {if (m is ResultWave) 
             m.Waves().Add(RandomWaveFactory.GetNewSquareWave());});
-
             _engine.AddMutation(m =>
             {
                 if (m is ResultWave)
                     m.Waves().Add(RandomWaveFactory.GetNewTriangleWave());
             });
-                
+            //_engine.AddMutation(m => { if (m is ResultWave) TransformWave(m); });    
 
-            //engine.SetTerminator();
+            //_engine.SetTerminator(_engine.SameFitnessFunctionFor(10));
             var window = new RenderWindow(VideoMode.DesktopMode, "Test");
             window.Closed += OnClosed;
             window.KeyPressed += OnKeyPressed;
+
+            _engine.RunIterations(); 
 
             while (window.IsOpen())
             {
@@ -90,7 +93,7 @@ namespace DSP
             window.Draw(text);
         }
 
-        private static int AbsoluteDifference(Wave a)
+        private static double AbsoluteDifference(Wave a)
         {
             return a.Generate(256).AbsoluteDifference(_myWave.Generate(256));
         }

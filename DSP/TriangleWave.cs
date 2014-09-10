@@ -24,15 +24,15 @@
             byte[] back = new byte[BackEdge];
             for (byte i = 0; i < AttackEdge; i++)
             {
-                attack[i] += (byte)(i*(Height/AttackEdge));
+                attack[i] += (byte)(i * (Height / (float)AttackEdge));
             }
             for (byte i = 0; i < BackEdge; i++)
             {
-                back[i] += (byte)(i * (Height / BackEdge));
+                back[i] += (byte)((BackEdge- i) * (Height / (float)BackEdge));
             }
 
             byte selector = 0; 
-            byte count = AttackEdge;
+            int count = AttackEdge;
             
             // selector = 0 attack edge
             //          = 1 back edge
@@ -53,7 +53,7 @@
                         break;
                 }
                 count--;
-                if (count==0)
+                if (count<=0)
                     switch (selector)
                     {
                         case 0:

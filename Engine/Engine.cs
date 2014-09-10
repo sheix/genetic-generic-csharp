@@ -22,9 +22,9 @@ namespace Engine
             Iteration = 1;
         }
 
-        public IEnumerable<T> GetBest(int N)
+        public IEnumerable<T> GetBest(int n)
         {
-            return _population.Take(N);
+            return _population.Take(n);
         }
 
         public void AddCrossover(Func<T,T,T> func)
@@ -48,7 +48,7 @@ namespace Engine
         }
 
         public int PopulationSize { get; set; }
-        protected Func<T, int> FitnessFunction { get; set; }
+        protected Func<T, double> FitnessFunction { get; set; }
 
         public void RunIteration()
         {
@@ -56,7 +56,19 @@ namespace Engine
             Mutate();
             CrossOver();
             Iteration++;
-            //Terminate();
+        }
+
+        public void RunIterations()
+        {
+            while (!Terminate())
+            {
+                RunIteration();
+            }
+        }
+
+        private bool Terminate()
+        {
+            return true;
         }
 
         public int Iteration { get; private set; }
@@ -97,15 +109,17 @@ namespace Engine
 
         private void SelectBestMembers()
         {
-            _population.Sort((a,b) => FitnessFunction(a) - FitnessFunction(b));
+            _population.Sort((a,b) => FitnessFunction(a).CompareTo(FitnessFunction(b)));
             var newPopulation = _population.Take(PopulationSize*SurvivorsPercent/100);
             _population = newPopulation.ToList();
         }
 
-        public void SetFitnessFunction(Func<T, int> func)
+        public void SetFitnessFunction(Func<T, double > func)
         {
             FitnessFunction = func;
         }
+
+
     }
 
     public interface IRandomSolutionFactory<out T>
