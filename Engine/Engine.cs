@@ -68,7 +68,7 @@ namespace Engine
 
         private bool Terminate()
         {
-            return true;
+            return false;
         }
 
         public int Iteration { get; private set; }

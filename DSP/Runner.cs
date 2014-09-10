@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Engine;
 using SFML.Graphics;
 using SFML.Window;
@@ -64,7 +65,8 @@ namespace DSP
             window.Closed += OnClosed;
             window.KeyPressed += OnKeyPressed;
 
-            _engine.RunIterations(); 
+            var task = new Task(() => _engine.RunIterations()); 
+            task.Start();
 
             while (window.IsOpen())
             {
