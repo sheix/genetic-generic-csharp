@@ -10,6 +10,7 @@ namespace Engine
         private List<T> _population;
         public int SurvivorsPercent;
         private readonly Random _random;
+        private Termination _termination;
         private List<Func<T,T,T>> Crossovers { get; set; }
         protected List<Action<T>> Mutations { get; set; }
 
@@ -58,8 +59,11 @@ namespace Engine
             Iteration++;
         }
 
-        public void RunIterations()
+        public void RunIterations(Termination termination)
         {
+            if (termination == null) _termination = new Termination();
+            _termination = termination;
+
             while (!Terminate())
             {
                 RunIteration();
@@ -68,6 +72,15 @@ namespace Engine
 
         private bool Terminate()
         {
+            if (_termination.Iterations.HasValue)
+               if (Iteration == _termination.Iterations.Value)
+                   return true;
+
+            if (_termination.IterationsWithSameMaximum.HasValue)
+            {   
+
+                //_same
+            }
             return false;
         }
 
@@ -105,11 +118,13 @@ namespace Engine
             return Mutations[_random.Next(Mutations.Count)];
         }
 
-        protected int MutationRate { get; set; }
+        public int MutationRate { get; set; }
 
         private void SelectBestMembers()
         {
-            _population.Sort((a,b) => FitnessFunction(a).CompareTo(FitnessFunction(b)));
+            // Thats optimization!
+            var fitnessFunctions = _population.ToDictionary(item => item, item => FitnessFunction(item));
+            _population.Sort((a, b) => fitnessFunctions[a].CompareTo(fitnessFunctions[b]));
             var newPopulation = _population.Take(PopulationSize*SurvivorsPercent/100);
             _population = newPopulation.ToList();
         }
@@ -118,8 +133,12 @@ namespace Engine
         {
             FitnessFunction = func;
         }
+    }
 
-
+    public class Termination
+    {
+        public int? Iterations;
+        public int? IterationsWithSameMaximum;
     }
 
     public interface IRandomSolutionFactory<out T>
