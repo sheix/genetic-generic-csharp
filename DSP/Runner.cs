@@ -24,12 +24,13 @@ namespace DSP
             var random = new Random();
             _engine = new Engine<Wave>(new RandomWaveFactory());
             _myWave = new ResultWave();
-            //_myWave.AddWave(new SquareWave(127, 10, 10, 0));
-            _myWave.AddWave(new TriangleWave(63, 25, 25, 0, 0));
+            _myWave.AddWave(new SquareWave(127, 64, 40, 10));
+            _myWave.AddWave(new TriangleWave(63, 25, 25, 0, 5));
 
 
             _engine.SetFitnessFunction(AbsoluteDifference);
-            _engine.PopulationSize = 400;
+            _engine.MutationRate = 10;
+            _engine.PopulationSize = 4000;
             _engine.Populate();
             _engine.SurvivorsPercent = 50;
             _engine.AddCrossover((w1, w2) =>
@@ -48,7 +49,9 @@ namespace DSP
                                         return result;
                                     }
                 );
-            _engine.AddMutation(m => {if (m is ResultWave)
+            _engine.AddMutation(m =>
+            {
+                if (m is ResultWave && m.Waves().Count > 0)
             m.Waves().RemoveAt(random.Next(m.Waves().Count));
             });
             _engine.AddMutation(m=> {if (m is ResultWave) 
@@ -65,7 +68,7 @@ namespace DSP
             window.Closed += OnClosed;
             window.KeyPressed += OnKeyPressed;
 
-            var task = new Task(() => _engine.RunIterations()); 
+            var task = new Task(() => _engine.RunIterations(new Termination())); 
             task.Start();
 
             while (window.IsOpen())
@@ -130,7 +133,7 @@ namespace DSP
             {
                 
                 var line = new Vertex[2];
-                var newVertex = new Vertex(new Vector2f(x, i*128 + pitch/2));
+                var newVertex = new Vertex(new Vector2f(x, (i+1)*128 - pitch/2));
                 line[0] = oldVertex;
                 line[1] = newVertex;
                 x++;
