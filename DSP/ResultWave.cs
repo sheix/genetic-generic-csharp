@@ -22,7 +22,7 @@ namespace DSP
         public override byte[] Generate(int length)
         {
             var byteArray = new Byte[length];
-            foreach (var wave in _waves)
+            foreach (var wave in _waves.ToArray())
             {
                 byte[] bytewave = wave.Generate(length);
                 for (int i = 0; i < length; i++)

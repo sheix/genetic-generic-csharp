@@ -72,13 +72,16 @@ namespace Engine
 
         private bool Terminate()
         {
+            Queue<double> lastFitnessFunctionValues = null;
             if (_termination.Iterations.HasValue)
                if (Iteration == _termination.Iterations.Value)
                    return true;
 
             if (_termination.IterationsWithSameMaximum.HasValue)
             {   
-
+                if (lastFitnessFunctionValues == null)
+                    lastFitnessFunctionValues = new Queue<double>(_termination.IterationsWithSameMaximum.Value);
+                lastFitnessFunctionValues.Enqueue(FitnessFunction(_population[0]));
                 //_same
             }
             return false;
@@ -93,9 +96,15 @@ namespace Engine
             for (int i = 0; i < newbornCount; i++)
             {
                 var crossover = SelectCrossover();
-                newPopulation.Add(crossover(_population[_random.Next(_population.Count)], _population[_random.Next(_population.Count)]));
+                newPopulation.Add(crossover(SelectParentForCrossover(), SelectParentForCrossover()));
             }
             _population.AddRange(newPopulation);
+        }
+
+        private T SelectParentForCrossover()
+        {
+            return _population[_random.Next(_population.Count/10)];
+            return _population[_random.Next(_population.Count)];
         }
 
         private Func<T,T,T> SelectCrossover()

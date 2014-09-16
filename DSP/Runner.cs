@@ -30,9 +30,9 @@ namespace DSP
 
             _engine.SetFitnessFunction(AbsoluteDifference);
             _engine.MutationRate = 10;
-            _engine.PopulationSize = 4000;
+            _engine.PopulationSize = 400;
             _engine.Populate();
-            _engine.SurvivorsPercent = 50;
+            _engine.SurvivorsPercent = 90;
             _engine.AddCrossover((w1, w2) =>
                                     {
                                         var result = new ResultWave();
