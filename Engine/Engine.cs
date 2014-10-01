@@ -12,7 +12,7 @@ namespace Engine
         private readonly Random _random;
         private Termination _termination;
         private List<Func<T,T,T>> Crossovers { get; set; }
-        protected List<Action<T>> Mutations { get; set; }
+        private List<Action<T>> Mutations { get; set; }
 
         public Engine(IRandomSolutionFactory<T> factory)
         {
@@ -53,10 +53,16 @@ namespace Engine
 
         public void RunIteration()
         {
-            SelectBestMembers();
+            KillWorstMemebers();
             Mutate();
             CrossOver();
+            SwitchPopulations();
             Iteration++;
+        }
+
+        private void SwitchPopulations()
+        {
+            _population = _newPopulation.ToList();
         }
 
         public void RunIterations(Termination termination)
@@ -70,18 +76,29 @@ namespace Engine
             }
         }
 
+        private Queue<double> _lastFitnessFunctionValues;
+        private List<T> _newPopulation;
+
         private bool Terminate()
         {
-            Queue<double> lastFitnessFunctionValues = null;
+            
             if (_termination.Iterations.HasValue)
                if (Iteration == _termination.Iterations.Value)
                    return true;
 
-            if (_termination.IterationsWithSameMaximum.HasValue)
+            if (_termination.IterationsWithSameMaximum.HasValue && _termination.Epsilon != null )
             {   
-                if (lastFitnessFunctionValues == null)
-                    lastFitnessFunctionValues = new Queue<double>(_termination.IterationsWithSameMaximum.Value);
-                lastFitnessFunctionValues.Enqueue(FitnessFunction(_population[0]));
+                if (_lastFitnessFunctionValues == null)
+                    _lastFitnessFunctionValues = new Queue<double>(_termination.IterationsWithSameMaximum.Value);
+                if (_lastFitnessFunctionValues.Count == _termination.IterationsWithSameMaximum.Value)
+                {
+                    if (_lastFitnessFunctionValues.All(m => Math.Abs(m - _lastFitnessFunctionValues.Average()) < _termination.Epsilon.Value))
+                            return true;
+
+                    _lastFitnessFunctionValues.Dequeue();
+                }
+
+                _lastFitnessFunctionValues.Enqueue(FitnessFunction(_population[0]));
                 //_same
             }
             return false;
@@ -91,20 +108,19 @@ namespace Engine
 
         private void CrossOver()
         {
-            int newbornCount = PopulationSize - _population.Count;
-            var newPopulation = new List<T>();
+            int newbornCount = PopulationSize - _newPopulation.Count;
+            var parentsForCrossover = SelectParentsForCrossover(newbornCount*2).ToArray();
             for (int i = 0; i < newbornCount; i++)
             {
                 var crossover = SelectCrossover();
-                newPopulation.Add(crossover(SelectParentForCrossover(), SelectParentForCrossover()));
+                _newPopulation.Add(crossover(parentsForCrossover[i*2], parentsForCrossover[i*2+1]));
             }
-            _population.AddRange(newPopulation);
+            
         }
 
-        private T SelectParentForCrossover()
+        private IEnumerable<T> SelectParentsForCrossover(int i)
         {
-            return _population[_random.Next(_population.Count/10)];
-            return _population[_random.Next(_population.Count)];
+            return _population.Take(i);
         }
 
         private Func<T,T,T> SelectCrossover()
@@ -114,11 +130,11 @@ namespace Engine
 
         private void Mutate()
         {
-            var howManyMutations = PopulationSize/100*MutationRate;
+            var howManyMutations = _newPopulation.Count / 100f * MutationRate;
             for (var i = 0; i < howManyMutations; i++)
             {
                 var mutation = SelectMutation();
-                mutation(_population[_random.Next(_population.Count)]);
+                mutation(_newPopulation[_random.Next(_newPopulation.Count)]);
             }
         }
 
@@ -129,13 +145,12 @@ namespace Engine
 
         public int MutationRate { get; set; }
 
-        private void SelectBestMembers()
+        private void KillWorstMemebers()
         {
             // Thats optimization!
             var fitnessFunctions = _population.ToDictionary(item => item, item => FitnessFunction(item));
             _population.Sort((a, b) => fitnessFunctions[a].CompareTo(fitnessFunctions[b]));
-            var newPopulation = _population.Take(PopulationSize*SurvivorsPercent/100);
-            _population = newPopulation.ToList();
+            _newPopulation = _population.Take(PopulationSize*SurvivorsPercent/100).ToList();
         }
 
         public void SetFitnessFunction(Func<T, double > func)
@@ -148,6 +163,7 @@ namespace Engine
     {
         public int? Iterations;
         public int? IterationsWithSameMaximum;
+        public double? Epsilon;
     }
 
     public interface IRandomSolutionFactory<out T>

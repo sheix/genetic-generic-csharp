@@ -29,10 +29,10 @@ namespace DSP
 
 
             _engine.SetFitnessFunction(AbsoluteDifference);
-            _engine.MutationRate = 10;
-            _engine.PopulationSize = 400;
+            _engine.MutationRate = 5;
+            _engine.PopulationSize = 100;
             _engine.Populate();
-            _engine.SurvivorsPercent = 90;
+            _engine.SurvivorsPercent = 20;
             _engine.AddCrossover((w1, w2) =>
                                     {
                                         var result = new ResultWave();
@@ -61,14 +61,11 @@ namespace DSP
                 if (m is ResultWave)
                     m.Waves().Add(RandomWaveFactory.GetNewTriangleWave());
             });
-            //_engine.AddMutation(m => { if (m is ResultWave) TransformWave(m); });    
-
-            //_engine.SetTerminator(_engine.SameFitnessFunctionFor(10));
             var window = new RenderWindow(VideoMode.DesktopMode, "Test");
             window.Closed += OnClosed;
             window.KeyPressed += OnKeyPressed;
 
-            var task = new Task(() => _engine.RunIterations(new Termination())); 
+            var task = new Task(() => _engine.RunIterations(new Termination {Iterations = 100})); 
             task.Start();
 
             while (window.IsOpen())
