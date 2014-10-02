@@ -7,20 +7,22 @@ namespace Engine
     public class Engine<T>
     {
         private readonly IRandomSolutionFactory<T> _factory;
+        private readonly EngineParameters<T> _parameters;
         private List<T> _population;
-        public int SurvivorsPercent;
         private readonly Random _random;
         private Termination _termination;
         private List<Func<T,T,T>> Crossovers { get; set; }
         private List<Action<T>> Mutations { get; set; }
 
-        public Engine(IRandomSolutionFactory<T> factory)
+        public Engine(IRandomSolutionFactory<T> factory, EngineParameters<T> parameters)
         {
             _random = new Random();
             _factory = factory;
+            _parameters = parameters;
             Crossovers = new List<Func<T, T, T>>();
             Mutations = new List<Action<T>>();
-            Iteration = 1;
+            Iteration = 0;
+            Populate();
         }
 
         public IEnumerable<T> GetBest(int n)
@@ -41,15 +43,13 @@ namespace Engine
         public void Populate()
         {
             _population = new List<T>();
-            for (int i = 0; i < PopulationSize; i++)
+            for (int i = 0; i < _parameters.PopulationSize; i++)
             {
                 var t = _factory.GetPossibleSolution();
                 _population.Add(t);
             }
         }
 
-        public int PopulationSize { get; set; }
-        protected Func<T, double> FitnessFunction { get; set; }
 
         public void RunIteration()
         {
@@ -98,7 +98,7 @@ namespace Engine
                     _lastFitnessFunctionValues.Dequeue();
                 }
 
-                _lastFitnessFunctionValues.Enqueue(FitnessFunction(_population[0]));
+                _lastFitnessFunctionValues.Enqueue(_parameters.FitnessFunction(_population[0]));
                 //_same
             }
             return false;
@@ -108,7 +108,7 @@ namespace Engine
 
         private void CrossOver()
         {
-            int newbornCount = PopulationSize - _newPopulation.Count;
+            int newbornCount = _parameters.PopulationSize - _newPopulation.Count;
             var parentsForCrossover = SelectParentsForCrossover(newbornCount*2).ToArray();
             for (int i = 0; i < newbornCount; i++)
             {
@@ -118,9 +118,12 @@ namespace Engine
             
         }
 
-        private IEnumerable<T> SelectParentsForCrossover(int i)
+        private IEnumerable<T> SelectParentsForCrossover(int count)
         {
-            return _population.Take(i);
+            var result = new List<T>();
+            for (int i = 0; i < count;i++ )
+                result.Add( _population[_random.Next() % (int)(_population.Count / 100f * _parameters.BestParents)]);
+            return result;
         }
 
         private Func<T,T,T> SelectCrossover()
@@ -130,7 +133,7 @@ namespace Engine
 
         private void Mutate()
         {
-            var howManyMutations = _newPopulation.Count / 100f * MutationRate;
+            var howManyMutations = _newPopulation.Count / 100f * _parameters.MutationRate;
             for (var i = 0; i < howManyMutations; i++)
             {
                 var mutation = SelectMutation();
@@ -143,20 +146,21 @@ namespace Engine
             return Mutations[_random.Next(Mutations.Count)];
         }
 
-        public int MutationRate { get; set; }
-
         private void KillWorstMemebers()
         {
-            // Thats optimization!
-            var fitnessFunctions = _population.ToDictionary(item => item, item => FitnessFunction(item));
+            var fitnessFunctions = _population.ToDictionary(item => item, item => _parameters.FitnessFunction(item));
             _population.Sort((a, b) => fitnessFunctions[a].CompareTo(fitnessFunctions[b]));
-            _newPopulation = _population.Take(PopulationSize*SurvivorsPercent/100).ToList();
+            _newPopulation = _population.Take(_parameters.PopulationSize*_parameters.Survivors/100).ToList();
         }
+    }
 
-        public void SetFitnessFunction(Func<T, double > func)
-        {
-            FitnessFunction = func;
-        }
+    public class EngineParameters<T>
+    {
+        public int MutationRate;
+        public int PopulationSize;
+        public int BestParents;
+        public int Survivors;
+        public Func<T, double> FitnessFunction;
     }
 
     public class Termination

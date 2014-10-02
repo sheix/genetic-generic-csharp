@@ -22,17 +22,18 @@ namespace DSP
         public static void Main()
         {
             var random = new Random();
-            _engine = new Engine<Wave>(new RandomWaveFactory());
+            _engine = new Engine<Wave>(new RandomWaveFactory(), new EngineParameters<Wave>
+                                                                    {
+                                                                        MutationRate = 50, 
+                                                                        PopulationSize = 1000, 
+                                                                        BestParents = 5, 
+                                                                        Survivors = 20,
+                                                                        FitnessFunction = AbsoluteDifference
+                                                                    });
             _myWave = new ResultWave();
             _myWave.AddWave(new SquareWave(127, 64, 40, 10));
             _myWave.AddWave(new TriangleWave(63, 25, 25, 0, 5));
-
-
-            _engine.SetFitnessFunction(AbsoluteDifference);
-            _engine.MutationRate = 5;
-            _engine.PopulationSize = 100;
-            _engine.Populate();
-            _engine.SurvivorsPercent = 20;
+            
             _engine.AddCrossover((w1, w2) =>
                                     {
                                         var result = new ResultWave();
@@ -70,17 +71,12 @@ namespace DSP
 
             while (window.IsOpen())
             {
-
                 window.DispatchEvents();
                 window.Clear();
-
                 RenderWaves(window);
                 RenderGeneration(window);    
                 window.Display();
             }
-
-
-            
         }
 
         private static void RenderGeneration(RenderWindow window)
