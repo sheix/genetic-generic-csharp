@@ -16,9 +16,10 @@ namespace DSP
     }
     public class Runner
     {
+        const int Length = 256;
         private static Engine<Wave> _engine;
         private static ResultWave _myWave;
-
+        private static byte[] _constWave;
         public static void Main()
         {
             var random = new Random();
@@ -33,7 +34,10 @@ namespace DSP
             _myWave = new ResultWave();
             _myWave.AddWave(new SquareWave(127, 64, 40, 10));
             _myWave.AddWave(new TriangleWave(63, 25, 25, 0, 5));
-            
+            _constWave = new byte[Length];
+            _constWave = _myWave.Generate(Length);
+
+
             _engine.AddCrossover((w1, w2) =>
                                     {
                                         var result = new ResultWave();
@@ -93,7 +97,7 @@ namespace DSP
 
         private static double AbsoluteDifference(Wave a)
         {
-            return a.Generate(256).AbsoluteDifference(_myWave.Generate(256));
+            return a.Generate(Length).AbsoluteDifference(_constWave);
         }
 
         private static void RenderWaves(RenderWindow window)
@@ -122,7 +126,7 @@ namespace DSP
                                 };
             window.Draw(text);
 
-            foreach (var pitch in bestWave.Generate(256))
+            foreach (var pitch in bestWave.Generate(Length))
             {
                 
                 var line = new Vertex[2];
