@@ -6,18 +6,14 @@ namespace Engine
 {
     public class Engine<T>
     {
-        private readonly IRandomSolutionFactory<T> _factory;
         private readonly EngineParameters<T> _parameters;
-        private List<T> _population;
         private readonly Random _random;
-        private Termination _termination;
-        private List<Func<T,T,T>> Crossovers { get; set; }
-        private List<Action<T>> Mutations { get; set; }
+        private List<T> _newPopulation;
+        private List<T> _population;
 
-        public Engine(IRandomSolutionFactory<T> factory, EngineParameters<T> parameters)
+        public Engine(EngineParameters<T> parameters)
         {
             _random = new Random();
-            _factory = factory;
             _parameters = parameters;
             Crossovers = new List<Func<T, T, T>>();
             Mutations = new List<Action<T>>();
@@ -25,12 +21,16 @@ namespace Engine
             Populate();
         }
 
+        private List<Func<T, T, T>> Crossovers { get; set; }
+        private List<Action<T>> Mutations { get; set; }
+        public int Iteration { get; private set; }
+
         public IEnumerable<T> GetBest(int n)
         {
             return _population.Take(n);
         }
 
-        public void AddCrossover(Func<T,T,T> func)
+        public void AddCrossover(Func<T, T, T> func)
         {
             Crossovers.Add(func);
         }
@@ -40,12 +40,12 @@ namespace Engine
             Mutations.Add(func);
         }
 
-        public void Populate()
+        private void Populate()
         {
             _population = new List<T>();
-            for (int i = 0; i < _parameters.PopulationSize; i++)
+            for (var i = 0; i < _parameters.PopulationSize; i++)
             {
-                var t = _factory.GetPossibleSolution();
+                T t = _parameters.RandomSolutionFactory.GetPossibleSolution();
                 _population.Add(t);
             }
         }
@@ -65,78 +65,53 @@ namespace Engine
             _population = _newPopulation.ToList();
         }
 
-        public void RunIterations(Termination termination)
+        public void RunIterations(Termination<T>[] terminations)
         {
-            if (termination == null) _termination = new Termination();
-            _termination = termination;
-
-            while (!Terminate())
+            while (!Terminate(terminations))
             {
                 RunIteration();
             }
         }
 
-        private Queue<double> _lastFitnessFunctionValues;
-        private List<T> _newPopulation;
-
-        private bool Terminate()
+        private bool Terminate(IEnumerable<Termination<T>> terminations)
         {
-            
-            if (_termination.Iterations.HasValue)
-               if (Iteration == _termination.Iterations.Value)
-                   return true;
-
-            if (_termination.IterationsWithSameMaximum.HasValue && _termination.Epsilon != null )
-            {   
-                if (_lastFitnessFunctionValues == null)
-                    _lastFitnessFunctionValues = new Queue<double>(_termination.IterationsWithSameMaximum.Value);
-                if (_lastFitnessFunctionValues.Count == _termination.IterationsWithSameMaximum.Value)
-                {
-                    if (_lastFitnessFunctionValues.All(m => Math.Abs(m - _lastFitnessFunctionValues.Average()) < _termination.Epsilon.Value))
-                            return true;
-
-                    _lastFitnessFunctionValues.Dequeue();
-                }
-
-                _lastFitnessFunctionValues.Enqueue(_parameters.FitnessFunction(_population[0]));
-                //_same
+            if (terminations.Any(termination => termination.Terminate(this)))
+            {
+                return true;
             }
             return false;
         }
 
-        public int Iteration { get; private set; }
-
         private void CrossOver()
         {
-            int newbornCount = _parameters.PopulationSize - _newPopulation.Count;
+            var newbornCount = _parameters.PopulationSize - _newPopulation.Count;
             var parentsForCrossover = SelectParentsForCrossover(newbornCount*2).ToArray();
-            for (int i = 0; i < newbornCount; i++)
+            for (var i = 0; i < newbornCount; i++)
             {
                 var crossover = SelectCrossover();
-                _newPopulation.Add(crossover(parentsForCrossover[i*2], parentsForCrossover[i*2+1]));
+                _newPopulation.Add(crossover(parentsForCrossover[i*2], parentsForCrossover[i*2 + 1]));
             }
-            
         }
 
         private IEnumerable<T> SelectParentsForCrossover(int count)
         {
             var result = new List<T>();
-            for (int i = 0; i < count;i++ )
-                result.Add( _population[_random.Next() % (int)(_population.Count / 100f * _parameters.BestParents)]);
+            for (var i = 0; i < count; i++)
+                result.Add(_population[_random.Next()%(int) (_population.Count/100f*_parameters.BestParents)]);
             return result;
         }
 
-        private Func<T,T,T> SelectCrossover()
+        private Func<T, T, T> SelectCrossover()
         {
             return Crossovers[_random.Next(Crossovers.Count)];
         }
 
         private void Mutate()
         {
-            var howManyMutations = _newPopulation.Count / 100f * _parameters.MutationRate;
-            for (var i = 0; i < howManyMutations; i++)
+            float howManyMutations = _newPopulation.Count/100f*_parameters.MutationRate;
+            for (int i = 0; i < howManyMutations; i++)
             {
-                var mutation = SelectMutation();
+                Action<T> mutation = SelectMutation();
                 mutation(_newPopulation[_random.Next(_newPopulation.Count)]);
             }
         }
@@ -148,26 +123,78 @@ namespace Engine
 
         private void KillWorstMemebers()
         {
-            var fitnessFunctions = _population.ToDictionary(item => item, item => _parameters.FitnessFunction(item));
+            Dictionary<T, double> fitnessFunctions = _population.ToDictionary(item => item,
+                                                                              item => _parameters.FitnessFunction(item));
             _population.Sort((a, b) => fitnessFunctions[a].CompareTo(fitnessFunctions[b]));
             _newPopulation = _population.Take(_parameters.PopulationSize*_parameters.Survivors/100).ToList();
+        }
+
+        public double FitnessFunction(T obj)
+        {
+            return _parameters.FitnessFunction(obj);
         }
     }
 
     public class EngineParameters<T>
     {
+        public int BestParents;
+        public Func<T, double> FitnessFunction;
         public int MutationRate;
         public int PopulationSize;
-        public int BestParents;
+        public IRandomSolutionFactory<T> RandomSolutionFactory;
         public int Survivors;
-        public Func<T, double> FitnessFunction;
     }
 
-    public class Termination
+    public abstract class Termination<T>
     {
-        public int? Iterations;
-        public int? IterationsWithSameMaximum;
-        public double? Epsilon;
+        public abstract bool Terminate(Engine<T> engine);
+    }
+
+    public class IterationsWithSameOrSimilarValueTermination<T> : Termination<T>
+    {
+        IterationsWithSameOrSimilarValueTermination(int iterations, double epsilon = 0)
+        {
+            _iterations = iterations;
+            _epsilon = epsilon;
+            _lastFitnessFunctionValues = new Queue<double>(_iterations);
+        }
+
+        private double _epsilon;
+        private int _iterations;
+        private Queue<double> _lastFitnessFunctionValues;
+
+        public override bool Terminate(Engine<T> engine)
+        {
+                if (_lastFitnessFunctionValues.Count == _iterations)
+                {
+                    if (
+                        _lastFitnessFunctionValues.All(
+                            m => Math.Abs(m - _lastFitnessFunctionValues.Average()) <= _epsilon))
+                        return true;
+
+                    _lastFitnessFunctionValues.Dequeue();
+                }
+
+                _lastFitnessFunctionValues.Enqueue(engine.FitnessFunction(engine.GetBest(1).FirstOrDefault()));
+            
+            return false;
+        }
+    }
+
+    public class NumberOfIterationsTermination<T> : Termination<T>
+    {
+        public NumberOfIterationsTermination(int iterations)
+        {
+            _iterations = iterations;
+        }
+        private readonly int _iterations;
+        
+        public override bool Terminate(Engine<T> engine)
+        {
+            if (engine.Iteration == _iterations)
+                return true;
+            return false;
+        }
     }
 
     public interface IRandomSolutionFactory<out T>

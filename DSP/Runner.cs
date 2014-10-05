@@ -23,13 +23,14 @@ namespace DSP
         public static void Main()
         {
             var random = new Random();
-            _engine = new Engine<Wave>(new RandomWaveFactory(), new EngineParameters<Wave>
+            _engine = new Engine<Wave>( new EngineParameters<Wave>
                                                                     {
                                                                         MutationRate = 50, 
                                                                         PopulationSize = 1000, 
                                                                         BestParents = 5, 
                                                                         Survivors = 20,
-                                                                        FitnessFunction = AbsoluteDifference
+                                                                        FitnessFunction = AbsoluteDifference,
+                                                                        RandomSolutionFactory = new RandomWaveFactory()
                                                                     });
             _myWave = new ResultWave();
             _myWave.AddWave(new SquareWave(127, 64, 40, 10));
@@ -70,7 +71,7 @@ namespace DSP
             window.Closed += OnClosed;
             window.KeyPressed += OnKeyPressed;
 
-            var task = new Task(() => _engine.RunIterations(new Termination {Iterations = 100})); 
+            var task = new Task(() => _engine.RunIterations(new Termination<Wave>[] {new NumberOfIterationsTermination<Wave>(100)})); 
             task.Start();
 
             while (window.IsOpen())
