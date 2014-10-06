@@ -108,7 +108,7 @@ namespace Engine
 
         private void Mutate()
         {
-            float howManyMutations = _newPopulation.Count/100f*_parameters.MutationRate;
+            var howManyMutations = _newPopulation.Count/100f*_parameters.MutationRate;
             for (int i = 0; i < howManyMutations; i++)
             {
                 Action<T> mutation = SelectMutation();
