@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine", "Engine.csproj", "{9A56F456-97D8-4CA3-908F-B3BAB9E0FA67}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "genetic-generic-engine", "genetic-generic-engine.csproj", "{9A56F456-97D8-4CA3-908F-B3BAB9E0FA67}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DSP", "..\DSP\DSP.csproj", "{EFEE68E3-427B-43EA-A94B-C1E1E113E597}"
 EndProject

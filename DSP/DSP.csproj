@@ -62,9 +62,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Engine\Engine.csproj">
+    <ProjectReference Include="..\Engine\genetic-generic-engine.csproj">
       <Project>{9A56F456-97D8-4CA3-908F-B3BAB9E0FA67}</Project>
-      <Name>Engine</Name>
+      <Name>genetic-generic-engine</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
