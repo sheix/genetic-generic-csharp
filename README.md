@@ -15,3 +15,5 @@ The more detailed description will follow
 * create an Engine object with EngineParameters (fill all fields in)
 * run methods RunIteration() or RunIterations()
 * take a look on result with GetBest() method
+
+Feel free to contact me or open an issues :)
